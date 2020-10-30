@@ -132,7 +132,8 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
             'voteType'       => 'default',
             'closed'         => FALSE,
 	    'fieldwidth'     => 'auto',
-	    'userlist'	     => 'vertical'
+	    'userlist'	     => 'vertical',
+	    'options'        => [],
         );
 
         //----- parse parameteres into name="value" pairs  
@@ -214,6 +215,11 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
 	    if (strcmp($name, "FIELDWIDTH") == 0) {
 		if (preg_match("/^[0-9]+px$/",$value,$hit) == 1)
 		    $params['fieldwidth'] = $hit[0];
+	    }
+	    if (strcmp($name, "CUSTOM_OPTIONS") == 0) {
+            if (preg_match_all("/([^;])+/",$value,$hit) >= 1) {
+                $params['options']=$hit[0];
+            }
 	    }
         }
 
@@ -616,20 +622,29 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
         $TR .='</td>';
        
         for($col = 0; $col < $c; $col++) {
-            $selected = '';
-            if ($editMode && in_array($col, $this->template['editEntry']['selected_indexes']) ) {
-                $selected = 'checked="checked"';
-            }
             $TR .= '<td class="centeralign">';
-            
-            if ($this->params['voteType'] == 'multi') {
-                $inputType = "checkbox";
+            if($this->params['options'] == []) {
+                $selected = '';
+                if ($editMode && in_array($col, $this->template['editEntry']['selected_indexes']) ) {
+                    $selected = 'checked="checked"';
+                }
+
+                if ($this->params['voteType'] == 'multi') {
+                    $inputType = "checkbox";
+                } else {
+                    $inputType = "radio";
+                }
+                $TR .= '<input type="'.$inputType.'" name="selected_indexes[]" value="'.$col.'"';
+                $TR .= $selected.">";
             } else {
-                $inputType = "radio";
+                $TR .= '<select>';
+                foreach($this->params['options'] as $option) {
+                    $TR .= '<option>'.$option.'</option>';
+                }
+
+                $TR .= '</select>';
+                $TR .= '</TD>';
             }
-            $TR .= '<input type="'.$inputType.'" name="selected_indexes[]" value="'.$col.'"';
-            $TR .= $selected.">";
-            $TR .= '</TD>';
         }
 
         $TR .= '</tr>';
