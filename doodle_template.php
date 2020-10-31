@@ -40,7 +40,7 @@ if ($template['userlist'] == 'vertical'){
      <tr class="row1">
          <th class="col0"><?php echo $lang['fullname'] ?></th>
 <?php foreach ($template['choices'] as $choice) {  ?>
-         <td class="centeralign" style="width:<?php echo $template['fieldwidth'] ?>"><?php echo $choice ?></td>
+         <td class="centeralign" style="width:<?php echo $template['fieldwidth'] ?>"><?php echo $choice['html'] ?></td>
 <?php } ?>
      </tr>
 

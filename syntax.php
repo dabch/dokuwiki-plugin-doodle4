@@ -238,15 +238,17 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
      */
     function parseChoices($choiceStr) {
         $choices = array();
-        preg_match_all('/^\s{0,3}\* (.*?)$/m', $choiceStr, $matches, PREG_PATTERN_ORDER);
-        foreach ($matches[1] as $choice) {
-            $choice = hsc(trim($choice));
+        preg_match_all('/^\s{0,3}\*([^\R ]+) (.*?)$/m', $choiceStr, $matches, PREG_PATTERN_ORDER);
+        //preg_match_all('/^\s{0,3}\* (.*?)$/m', $choiceStr, $matches, PREG_PATTERN_ORDER);
+        foreach ($matches[1] as $i => $id) {
+            $id = hsc(trim($id));
+            $choice = hsc(trim($matches[2][$i]));
             if (!empty($choice)) {
                 $choice = preg_replace('#\\\\\\\\#', '<br />', $choice);       # two(!) backslashes for a newline
                 $choice = preg_replace('#\*\*(.*?)\*\*#', '<b>\1</b>', $choice);   # bold
                 $choice = preg_replace('#__(.*?)__#', '<u>\1</u>', $choice);   # underscore
                 $choice = preg_replace('#//(.*?)//#', '<i>\1</i>', $choice);   # italic
-                $choices []= $choice;
+                $choices []= ['id' => $id, 'html' => $choice];
             }
         }
         //debout($choices);
@@ -319,7 +321,8 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
          * The $doodle array maps fullnames (with html special characters masked) to an array of userData for this vote.
          * Each sub array contains:
          *   'username' loggin name if use was logged in
-         *   'choices'  is an (variable length!) array of column indexes where user has voted
+         //*   'choices'  is an (variable length!) array of column indexes where user has voted
+         *   'choices'  is a map of choice keys where the user has voted
          *   'ip'       ip of voting machine
          *   'time'     unix timestamp when vote was casted
          
@@ -327,17 +330,17 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
         $doodle = array(
           'Robert' => array(
             'username'  => 'doogie'
-            'choices'   => array(0, 3),
+            'choices'   => array('date1' => "Yes", 'date2' => "No", 'extra-1' => "No (vacation)),
             'ip'        => '123.123.123.123',
             'time'      => 1284970602
           ),
           'Peter' => array(
-            'choices'   => array(),
+            'choices'   => array('date1' => "n/a", 'date2' => "n/a", 'extra-1' => "n/a"),
             'ip'        => '222.122.111.1',
             'time'      > 12849702333
           ),
           'Sabine' => array(
-            'choices'   => array(0, 1, 2, 3, 4),
+            'choices'   => array('date1' => "n/a", 'date2' => "n/a", 'extra-1' => "n/a"),
             'ip'        => '333.333.333.333',
             'time'      => 1284970222
           ),
@@ -365,14 +368,16 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
 			if (!empty($userData['username'])) {
 			  $this->template['doodleData']["$fullname"]['username'] = $userData['username'];
 			}
-			if (in_array($col, $userData['choices'])) {
+            $col_choice = $this->choices[$col]['id'];
+            if ((empty($this->params['options']) && in_array($col, $userData['choices'])) ||
+                $userData['choices'][$col_choice] == "Ja" ) {
 			    $timeLoc = strftime($conf['dformat'], $userData['time']);  // localized time of vote
 			    $this->template['doodleData']["$fullname"]['choice'][$col] = 
 				'<td  class="centeralign" style="background-color:#AFA"><img src="'.DOKU_BASE.'lib/images/success.png" title="'.$timeLoc.'"></td>';
 			    $this->template['count']["$col"]++;
 			} else {
 			    $this->template['doodleData']["$fullname"]['choice'][$col] = 
-				'<td  class="centeralign" style="background-color:#FCC">&nbsp;</td>';
+				'<td  class="centeralign" style="background-color:#FCC">'.$userData['choices'][$col_choice].'</td>';
 			}  
 		 }	  
             }
@@ -637,7 +642,7 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
                 $TR .= '<input type="'.$inputType.'" name="selected_indexes[]" value="'.$col.'"';
                 $TR .= $selected.">";
             } else {
-                $TR .= '<select>';
+                $TR .= '<select name="selected_indexes['.$this->choices[$col]['id'].']">';
                 foreach($this->params['options'] as $option) {
                     $TR .= '<option>'.$option.'</option>';
                 }
