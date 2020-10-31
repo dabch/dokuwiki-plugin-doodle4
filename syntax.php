@@ -630,6 +630,7 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
             $TR .= '<td class="centeralign">';
             if($this->params['options'] == []) {
                 $selected = '';
+                
                 if ($editMode && in_array($col, $this->template['editEntry']['selected_indexes']) ) {
                     $selected = 'checked="checked"';
                 }
@@ -642,9 +643,14 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
                 $TR .= '<input type="'.$inputType.'" name="selected_indexes[]" value="'.$col.'"';
                 $TR .= $selected.">";
             } else {
+                $col_choice = $this->choices[$col]['id'];
                 $TR .= '<select name="selected_indexes['.$this->choices[$col]['id'].']">';
                 foreach($this->params['options'] as $option) {
-                    $TR .= '<option>'.$option.'</option>';
+                    $selected = '';
+                    //echo($this->template['editEntry']['selected_indexes'][$col_choice]." ".$option."<br>");
+                    if($this->template['editEntry']['selected_indexes'][$col_choice] == $option)
+                        $selected = ' selected';
+                    $TR .= '<option '.$selected.'>'.$option.'</option>';
                 }
 
                 $TR .= '</select>';
