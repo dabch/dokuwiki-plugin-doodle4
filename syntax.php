@@ -134,6 +134,7 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
 	    'fieldwidth'     => 'auto',
 	    'userlist'	     => 'vertical',
 	    'options'        => [],
+        'canDelete'      => TRUE,
         );
 
         //----- parse parameteres into name="value" pairs  
@@ -177,14 +178,21 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
             {
                 $params['closed'] = 1;
             } else
+            if (strcmp($name, "CANDELETE") == 0) {
+                if (strcasecmp($value, "FALSE") == 0) {
+                    $params['canDelete'] = 0;
+                } else {
+                    $params['canDelete'] = 1;
+                }
+            } else
             if (strcmp($name, "CLOSED") == 0) {
-		if (strcasecmp($value, "TRUE") == 0) {
-			$params['closed'] = 1;
-		} else if ($time = strtotime($value)) {
-			if ($time < time()) $params['closed'] = 1;
-		} else {
-                	$params['closed'] = 0;
-		}
+                if (strcasecmp($value, "TRUE") == 0) {
+                    $params['closed'] = 1;
+                } else if ($time = strtotime($value)) {
+                    if ($time < time()) $params['closed'] = 1;
+                } else {
+                            $params['closed'] = 0;
+                }
             } 
 	    else
 	    if (strcmp($name, "PRINTNAME") == 0) {
@@ -392,10 +400,12 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
                 $this->template['doodleData']["$fullname"]['editLinks'] = 
                    '<a href="javascript:editEntry(\''.$formId.'\',\''.$fullname.'\')">'.
                    '  <img src="'.DOKU_BASE.'lib/plugins/doodle4/pencil.png" alt="edit entry" style="float:left">'.
-                   '</a>'.
-                   '<a href="javascript:deleteEntry(\''.$formId.'\',\''.$fullname.'\')">'.
-                   '  <img src="'.DOKU_BASE.'lib/plugins/doodle4/delete.png" alt="delete entry" style="float:left">'.
                    '</a>';
+                if($this->params['canDelete'])
+                    $this->template['doodleData']["$fullname"]['editLinks'] .=
+                        '<a href="javascript:deleteEntry(\''.$formId.'\',\''.$fullname.'\')">'.
+                       '  <img src="'.DOKU_BASE.'lib/plugins/doodle4/delete.png" alt="delete entry" style="float:left">'.
+                       '</a>';
             }
         }
 
