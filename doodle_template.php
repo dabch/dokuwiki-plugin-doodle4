@@ -43,6 +43,10 @@ if ($template['userlist'] == 'vertical'){
          <td class="centeralign" style="width:<?php echo $template['fieldwidth'] ?>"><?php echo $choice['html'] ?></td>
 <?php } ?>
      </tr>
+<?php
+     /* Input fields, if allowed. */
+ 	echo $template['inputTR'] 
+?>
 
 <?php foreach ($template['doodleData'] as $fullname => $userData) { ?>
      <tr>
@@ -77,10 +81,6 @@ if ($template['userlist'] == 'vertical'){
 		}
 	 ?>
 
-<?php
-     /* Input fields, if allowed. */
- 	echo $template['inputTR'] 
-?>
 
 <?php if (!empty($template['msg'])) { ?>    
      <tr>
