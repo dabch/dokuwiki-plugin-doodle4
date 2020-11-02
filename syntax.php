@@ -727,6 +727,9 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
         if (strcmp($this->params['sort'], 'time') == 0) {
             debout("sorting by time");
             uasort($doodle, 'cmpEntryByTime');
+        } elseif (strcmp($this->params['sort'], 'username') == 0) {
+            debout("sorting by username");
+            uasort($doodle, 'cmpEntryByUsername');
         } else {
             uksort($doodle, "strnatcasecmp"); // case insensitive "natural" sort
         }
@@ -768,6 +771,10 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
 /** compare two doodle entries by the time of vote */
 function cmpEntryByTime($a, $b) {
     return strcmp($a['time'], $b['time']);
+}
+
+function cmpEntryByUsername($a, $b) {
+    return strcmp($a['username'], $b['username']);
 }
 
 
