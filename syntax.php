@@ -135,6 +135,7 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
 	    'userlist'	     => 'vertical',
 	    'options'        => [],
         'canDelete'      => TRUE,
+        'expiryDeadline' => 0,
         );
 
         //----- parse parameteres into name="value" pairs  
@@ -165,6 +166,12 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
                 // check for valid email adress
                 if (preg_match('/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,5})$/', $value)) {
                     $params['adminMail'] = $value;
+                }
+            } else 
+            if (strcmp($name, "EXPIRYDEADLINE") == 0) {
+                // check for valid number
+                if (preg_match('/^[0-9]+$/', $value)) {
+                    $params['expiryDeadline'] = $value;
                 }
             } else 
             if (strcmp($name, "VOTETYPE") == 0) {
@@ -226,7 +233,7 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
 	    }
 	    if (strcmp($name, "CUSTOM_OPTIONS") == 0) {
             if (preg_match_all("/([^;])+/",$value,$hit) >= 1) {
-                $params['options']=$hit[0];
+                $params['options']= array_merge(array(0 => ""), $hit[0]);
             }
 	    }
         }
@@ -675,7 +682,18 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
                 $TR .= $selected.">";
             } else {
                 $col_choice = $this->choices[$col]['id'];
-                $TR .= '<select name="selected_indexes['.$this->choices[$col]['id'].']">';
+                $disabled = '';
+                if($this->params['expiryDeadline'] > 0) {
+                    $currentDate = new DateTime();
+                    $currentTs = $currentDate->getTimestamp();
+                    $eventDate = new DateTime($this->choices[$col]['date']);
+                    $eventTs = $eventDate->getTimestamp();        
+                    // eventTs is at 0:00 midnight on the event day. Add one to be able to edit the choice until midnight the day after (23:59 on the event day)
+                    if($currentTs - $eventTs > (expiryDeadline + 1) * 60 * 60 * 24) {
+                        $disabled = " disabled ";
+                    }
+                }
+                $TR .= '<select name="selected_indexes['.$this->choices[$col]['id'].']" '.$disabled.'>';
                 foreach($this->params['options'] as $option) {
                     $selected = '';
                     //echo($this->template['editEntry']['selected_indexes'][$col_choice]." ".$option."<br>");
