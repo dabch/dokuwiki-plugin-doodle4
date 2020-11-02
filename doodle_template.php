@@ -38,9 +38,15 @@ if ($template['userlist'] == 'vertical'){
        </th>
      </tr>
      <tr class="row1">
-         <th class="col0"><?php echo $lang['fullname'] ?></th>
+         <th class="col0 centeralign"></th>
 <?php foreach ($template['choices'] as $choice) {  ?>
          <td class="centeralign" style="width:<?php echo $template['fieldwidth'] ?>"><?php echo $choice['html'] ?></td>
+<?php } ?>
+     </tr>
+     <tr class="row1">
+         <th class="col0 centeralign"><?php echo $lang['fullname'] ?></th>
+<?php foreach ($template['choices'] as $choice) {  ?>
+         <td class="centeralign" style="width:<?php echo $template['fieldwidth'] ?>"><?php $date = new DateTime($choice['date']); echo $date->format('d.m.y') ?></td>
 <?php } ?>
      </tr>
 <?php

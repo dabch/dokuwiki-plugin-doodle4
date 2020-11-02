@@ -246,17 +246,18 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
      */
     function parseChoices($choiceStr) {
         $choices = array();
-        preg_match_all('/^\s{0,3}\*([^\R ]+) (.*?)$/m', $choiceStr, $matches, PREG_PATTERN_ORDER);
+        preg_match_all('/^\s{0,3}\* (\d{4}-\d{1,2}-\d{1,2}) ([^\R ]+) (.*?)$/m', $choiceStr, $matches, PREG_PATTERN_ORDER);
         //preg_match_all('/^\s{0,3}\* (.*?)$/m', $choiceStr, $matches, PREG_PATTERN_ORDER);
-        foreach ($matches[1] as $i => $id) {
+        foreach ($matches[2] as $i => $id) {
             $id = hsc(trim($id));
-            $choice = hsc(trim($matches[2][$i]));
+            $choice = hsc(trim($matches[3][$i]));
+            $date = hsc(trim($matches[1][$i]));
             if (!empty($choice)) {
                 $choice = preg_replace('#\\\\\\\\#', '<br />', $choice);       # two(!) backslashes for a newline
                 $choice = preg_replace('#\*\*(.*?)\*\*#', '<b>\1</b>', $choice);   # bold
                 $choice = preg_replace('#__(.*?)__#', '<u>\1</u>', $choice);   # underscore
                 $choice = preg_replace('#//(.*?)//#', '<i>\1</i>', $choice);   # italic
-                $choices []= ['id' => $id, 'html' => $choice];
+                $choices []= ['id' => $id, 'html' => $choice, 'date' => $date];
             }
         }
         //debout($choices);
