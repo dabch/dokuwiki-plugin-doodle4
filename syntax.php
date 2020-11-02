@@ -497,6 +497,25 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
             return;
         }
 
+        // check if vote for any expired event has been changed (i.e. the user has manually edited the html to remove the 'disabled'
+        // parameter from one of the <select> tags....)
+        if($this->params['expiryDeadline'] > 0) {
+            $currentDate = new DateTime();
+            $currentTs = $currentDate->getTimestamp();
+            foreach($this->choices as $choice) {
+                $id = $choice['id'];
+                $eventDate = new DateTime($choice['date']);
+                $eventTs = $eventDate->getTimestamp();        
+                if($currentTs - $eventTs > (expiryDeadline + 1) * 60 * 60 * 24) {
+                    // compare saved data with newly arrived data
+                    if($this->doodle["$fullname"]['choices'][$id] != $selected_indexes[$id]) {
+                        debout("Ignoring illegal input, reason: trying to edit expired event data");
+                        return;
+                    }
+                }
+            }
+        }
+
         if (!empty($_SERVER['REMOTE_USER'])) {
           $this->doodle["$fullname"]['username'] = $_SERVER['REMOTE_USER'];
         }
