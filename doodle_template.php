@@ -70,7 +70,11 @@ if ($template['userlist'] == 'vertical'){
          <?php for ($col = 0; $col < $c; $col++) {
              echo $userData['choice'][$col];
          } ?>        
+        <td class="centeralign">
+            <?php echo $userData['countPerUser']?> 
+        </td>
      </tr>
+     
 <?php } ?>
  
 <!-- Results / sum per column -->

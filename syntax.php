@@ -376,6 +376,11 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
 	$this->template['showSum'] = $this->params['showSum'];
 	$this->template['printName'] = $this->params['printName'];
         $this->template['userlist'] = $this->params['userlist'];
+        
+        // init countPerUser for all users
+        foreach($this->doodle as $fullname => $userData)
+            $this->template['doodleData']["$fullname"]['countPerUser'] = 0;
+
 	    
         for($col = 0; $col < count($this->choices); $col++) {
             $this->template['count'][$col] = 0;
@@ -392,6 +397,7 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
 			    $this->template['doodleData']["$fullname"]['choice'][$col] = 
 				'<td  class="centeralign" style="background-color:#AFA"><img src="'.DOKU_BASE.'lib/images/success.png" title="'.$timeLoc.'"></td>';
 			    $this->template['count']["$col"]++;
+                $this->template['doodleData']["$fullname"]['countPerUser']++;
             } elseif(!empty($this->params['options']) && //"undefined" state (grey), only applicable with custom options
                 (!array_key_exists($col_choice, $userData['choices']) ||
                 $userData['choices'][$col_choice] == $this->params['options'][0])) {
