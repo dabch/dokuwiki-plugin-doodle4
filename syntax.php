@@ -378,11 +378,16 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
 			}
             $col_choice = $this->choices[$col]['id'];
             if ((empty($this->params['options']) && in_array($col, $userData['choices'])) ||
-                $userData['choices'][$col_choice] == "Ja" ) {
+                $userData['choices'][$col_choice] == $this->params['options'][1] ) {
 			    $timeLoc = strftime($conf['dformat'], $userData['time']);  // localized time of vote
 			    $this->template['doodleData']["$fullname"]['choice'][$col] = 
 				'<td  class="centeralign" style="background-color:#AFA"><img src="'.DOKU_BASE.'lib/images/success.png" title="'.$timeLoc.'"></td>';
 			    $this->template['count']["$col"]++;
+            } elseif(!empty($this->params['options']) &&
+                     $userData['choices'][$col_choice] == $this->params['options'][0]) {
+			    $this->template['doodleData']["$fullname"]['choice'][$col] = 
+				'<td  class="centeralign" style="background-color:#FFF">'.$userData['choices'][$col_choice].'</td>';
+                    
 			} else {
 			    $this->template['doodleData']["$fullname"]['choice'][$col] = 
 				'<td  class="centeralign" style="background-color:#FCC">'.$userData['choices'][$col_choice].'</td>';
@@ -401,7 +406,7 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
                    '<a href="javascript:editEntry(\''.$formId.'\',\''.$fullname.'\')">'.
                    '  <img src="'.DOKU_BASE.'lib/plugins/doodle4/pencil.png" alt="edit entry" style="float:left">'.
                    '</a>';
-                if($this->params['canDelete'])
+                if($this->params['canDelete'] || $this->isAdmin($fullname))
                     $this->template['doodleData']["$fullname"]['editLinks'] .=
                         '<a href="javascript:deleteEntry(\''.$formId.'\',\''.$fullname.'\')">'.
                        '  <img src="'.DOKU_BASE.'lib/plugins/doodle4/delete.png" alt="delete entry" style="float:left">'.
@@ -519,6 +524,32 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
     
     // ---------- HELPER METHODS -----------
 
+    /** 
+     * check if currently logged in user is admin.
+     * @return true if user is either in an admin group, or explicitly listed as poll admin
+     */
+    function isAdmin($fullName) {
+        //if (empty($fullName)) return false;
+        //if (!isset($this->doodle["$fullname"])) return false;
+        if (!$this->isLoggedIn()) return false;
+
+        $adminFlag = false;
+
+        //check adminGroups
+        if (!empty($this->params['adminGroups'])) {
+            $adminGroups = explode('|', $this->params['adminGroups']); // array of adminGroups
+            $usersGroups = $INFO['userinfo']['grps'];  // array of groups that the user is in
+            if(count(array_intersect($adminGroups, $usersGroups)) > 0) $adminFlag = true;
+        }
+        
+        //check adminUsers
+        if (!empty($this->params['adminUsers'])) {
+            $adminUsers = explode('|', $this->params['adminUsers']);
+            if(in_array($_SERVER['REMOTE_USER'], $adminUsers)) $adminFlag = true;
+        }
+        return $adminFlag;
+    }
+	
     /**
      * check if the currently logged in user is allowed to edit a given entry.
      * @return true if entryFullname is the entry of the current user, or
@@ -533,25 +564,13 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
         if ($this->params['closed']) return false;
         if (!$this->isLoggedIn()) return false;
 
-		$allowFlag = false;
-        //check adminGroups
-        if (!empty($this->params['adminGroups'])) {
-            $adminGroups = explode('|', $this->params['adminGroups']); // array of adminGroups
-            $usersGroups = $INFO['userinfo']['grps'];  // array of groups that the user is in
-            if(count(array_intersect($adminGroups, $usersGroups)) > 0) $allowFlag = true;
-        }
-        
-        //check adminUsers
-        if (!empty($this->params['adminUsers'])) {
-            $adminUsers = explode('|', $this->params['adminUsers']);
-            if(in_array($_SERVER['REMOTE_USER'], $adminUsers)) $allowFlag = true;
-        }
+		$allowFlag = $this->isAdmin($entryFullname);
         
         //check own entry
         if(strcasecmp(hsc($INFO['userinfo']['name']), $entryFullname) == 0) $allowFlag = true;  // compare real name
 		return $allowFlag;
     }
-	
+
     /**
      * check if the currently logged in user is allowed to see a given entry.
      * @return true if entryFullname is the entry of the current user, or
