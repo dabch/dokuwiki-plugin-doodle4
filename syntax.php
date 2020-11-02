@@ -377,18 +377,19 @@ class syntax_plugin_doodle4 extends DokuWiki_Syntax_Plugin
 			  $this->template['doodleData']["$fullname"]['username'] = $userData['username'];
 			}
             $col_choice = $this->choices[$col]['id'];
-            if ((empty($this->params['options']) && in_array($col, $userData['choices'])) ||
-                $userData['choices'][$col_choice] == $this->params['options'][1] ) {
+
+            if ((empty($this->params['options']) && in_array($col, $userData['choices'])) || // either no custom options, and index set
+                $userData['choices'][$col_choice] == $this->params['options'][1] ) { // or the second choice (which is "yes")
 			    $timeLoc = strftime($conf['dformat'], $userData['time']);  // localized time of vote
 			    $this->template['doodleData']["$fullname"]['choice'][$col] = 
 				'<td  class="centeralign" style="background-color:#AFA"><img src="'.DOKU_BASE.'lib/images/success.png" title="'.$timeLoc.'"></td>';
 			    $this->template['count']["$col"]++;
-            } elseif(!empty($this->params['options']) &&
-                     $userData['choices'][$col_choice] == $this->params['options'][0]) {
+            } elseif(!empty($this->params['options']) && //"undefined" state (grey), only applicable with custom options
+                (!array_key_exists($col_choice, $userData['choices']) ||
+                $userData['choices'][$col_choice] == $this->params['options'][0])) {
 			    $this->template['doodleData']["$fullname"]['choice'][$col] = 
-				'<td  class="centeralign" style="background-color:#FFF">'.$userData['choices'][$col_choice].'</td>';
-                    
-			} else {
+				'<td  class="centeralign" style="background-color:#FFF">'.'</td>';
+			} else { // 'no time' / 'absent' state
 			    $this->template['doodleData']["$fullname"]['choice'][$col] = 
 				'<td  class="centeralign" style="background-color:#FCC">'.$userData['choices'][$col_choice].'</td>';
 			}  
